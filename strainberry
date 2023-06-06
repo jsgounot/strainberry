@@ -241,6 +241,23 @@ def main(argv=None):
             eprint(f'    Length:    {asm_len} bp')
             eprint(f'    N50:       {asm_n50} bp')
 
+    # Add from Jean-Sebastien Gounot
+    # In case Strainberry is unable to split the intial assembly file into 2 strains,
+    # Strainberry terminates without error but without generating the expected output file
+    # named 'assembly_file' here. This makes sense in general but it make snakemake pipelines
+    # crash because no output file has been generated.
+    # In the code bellow, I create a symlink of the assembly when no phasing has been done. This
+    # allows snakemake to continue but assume that a failure in phasing = initial reference (so one single strain)
+
+    assembly_file = os.path.join(opt.OUTDIR, 'assembly.scaffolds.fa')
+    if not os.path.isfile(assembly_file):
+        ref = os.path.abspath(opt.FASTA)
+        eprint(f'No assembly file produced (no phasing?), generate symlink based on refpath {ref} - jsgounot code')
+        os.symlink(ref, assembly_file)
+
+
+    # end of jsgounot code
+
     return 0
 
 
